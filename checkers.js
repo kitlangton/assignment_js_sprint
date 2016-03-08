@@ -64,20 +64,67 @@ var renderBoard = function(game) {
   }
 };
 
-$(document).ready(function() {
-  window.game = new Checkers();
-  renderBoard(game);
 
-  var from = null;
-  $('.board').on('click', '.space', function(event) {
-    if (from) {
-      var to = [$(this).data('row'), $(this).data('col')];
-      window.game.move(from, to);
-      renderBoard(game);
-      from = null;
-    } else {
-      from = [$(this).data('row'), $(this).data('col')];
+function CheckersUI(el) {
+  this.game = new Checkers();
+  var self = this;
+  this.el = $(el);
+
+  this.render = function() {
+    this.el.html("");
+    for (var i = 0; i < this.game.board.length; ++i) {
+      for (var j = 0; j < this.game.board[i].length; ++j) {
+        var space = $($.parseHTML("<div class='space'></div>"));
+        space.data("row", i);
+        space.data("col", j);
+        if ( (i + j) % 2 == 0 ) {
+          space.addClass('even');
+        }
+        var piece = this.game.pieceAt(i,j);
+        if (piece) {
+          space.append("<div class='piece " + this.game.colorAt(i,j) + "'></div>");
+        }
+        this.el.append(space);
+      }
+      this.el.append("<br>");
     }
-  });
+  }
+
+  this.moving = false;
+  var fromPiece;
+  var fromOffset;
+  var from;
+
+  this.handleClick = function() {
+    $('.board').on('click', '.space', function(event) {
+      if (self.moving) {
+        return false;
+      }
+      if (from) {
+        var to = [$(this).data('row'), $(this).data('col')];
+        var toSpace = $(this);
+        var offset = toSpace.offset();
+        self.game.move(from, to);
+        fromPiece.animate({left: offset.left - fromOffset.left + 5, top: offset.top - fromOffset.top + 5});
+        from = null;
+        self.moving = true;
+        setTimeout(function() { self.render(); self.moving = false; }, 500 );
+      } else {
+        fromPiece = $(this).find(".piece");
+        if (!fromPiece) {
+          return false;
+        }
+        from = [$(this).data('row'), $(this).data('col')];
+        fromOffset = fromPiece.offset();
+      }
+    });
+  }
+
+  this.render();
+  this.handleClick();
+}
+
+$(document).ready(function() {
+  var checkers = new CheckersUI('.board');
 });
 
