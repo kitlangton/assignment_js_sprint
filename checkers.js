@@ -25,7 +25,7 @@ function Checkers() {
 
   this.pieceAt = function(row, col) {
     return this.board[row][col];
-  }
+  };
 
   this.colorAt = function(row, col) {
     var piece = this.board[row][col];
@@ -35,14 +35,76 @@ function Checkers() {
       return "";
     }
   };
+  
+  this.validMove = function(from, to) {
+
+    if (to[0] >= this.board.length || to[1] >= this.board.length) {
+      return false;
+    }
+
+    validSingleMoves = [ [from[0] - 1, from[1] + 1] , 
+                         [from[0] + 1, from[1] + 1] , 
+                         [from[0] + 1, from[1] - 1] , 
+                         [from[0] - 1, from[1] - 1]  
+                       ];
+   
+
+    validDoubleMoves = [ [from[0] - 2, from[1] + 2] , 
+                         [from[0] + 2, from[1] + 2] , 
+                         [from[0] + 2, from[1] - 2] , 
+                         [from[0] - 2, from[1] - 2] , 
+                       ];
+
+    for (var i = 0; i < validSingleMoves.length; i++ ) {
+
+      if ( to.join("") == validSingleMoves[i].join("") ) {
+        if (!this.pieceAt(to[0], to[1])) {
+          return true;
+        }
+      }
+    }
+
+    for (var i = 0; i < validDoubleMoves.length; i++ ) {
+
+      if ( to.join("") == validDoubleMoves[i].join("") ) {
+
+        if ( !this.pieceAt(to[0], to[1]) ) {
+           
+          if ( to[0] > from[0] ) {
+            var middle_row = from[0] + 1;
+          } else {
+            var middle_row = from[0] - 1;
+          }
+           
+          if ( to[1] > from[1] ) {
+            var middle_col = from[1] + 1;
+          } else {
+            var middle_col = from[1] - 1;
+          }
+     
+          if ( this.colorAt(middle_row, middle_col) != this.colorAt(from[0], from[1])) {
+            this.board[middle_row][middle_col] = null;
+            return true;
+          }
+        }
+      }
+    }
+
+    return false;
+  };
 
   this.move = function(from, to) {
-    this.board[to[0]][to[1]] = this.pieceAt(from[0], from[1]);
-    this.board[from[0]][from[1]] = null;
-  }
 
+    if (this.validMove(from,to)) {
+      this.board[to[0]][to[1]] = this.pieceAt(from[0], from[1]);
+      this.board[from[0]][from[1]] = null;
+    } else {
+      console.log("This is not a valid move");
+    }
+  }
+  
   this.buildBoard();
-}
+  }
 
 var renderBoard = function(game) {
   $(".board").html("");
@@ -60,7 +122,7 @@ var renderBoard = function(game) {
       }
       $(".board").append(space);
     }
-      $(".board").append("<br>");
+    $(".board").append("<br>");
   }
 };
 
@@ -127,4 +189,3 @@ function CheckersUI(el) {
 $(document).ready(function() {
   var checkers = new CheckersUI('.board');
 });
-
