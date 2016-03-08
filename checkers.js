@@ -1,6 +1,14 @@
 function Piece(color) {
   this.color = color;
 
+  this.enemyColor = function() {
+    if (this.color == "red") {
+      return 'black';
+    } else {
+      return 'red';
+    }
+  }
+
   this.redSingleMoves = function(from) {
     return [
       [from[0] + 1, from[1] + 1] ,
@@ -125,7 +133,7 @@ function Checkers() {
             var middle_col = from[1] - 1;
           }
 
-          if ( this.colorAt(middle_row, middle_col) != this.colorAt(from[0], from[1])) {
+          if ( this.colorAt(middle_row, middle_col) == this.pieceAt(from[0], from[1]).enemyColor()) {
             this.board[middle_row][middle_col] = null;
             return true;
           }
